@@ -48,6 +48,7 @@ model.fit(X, y)
 
 # Judul aplikasi
 st.title('Prediksi Harga Emas')
+st.image('https://i.pinimg.com/564x/43/f3/e5/43f3e57d6f4703bf6e35f97481d993f4.jpg')
 
 # Input bulan dan tahun
 bulan = st.slider("Pilih Bulan (1-12)", 1, 12, 1)
