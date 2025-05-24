@@ -8,68 +8,51 @@ from sklearn.metrics import mean_squared_error
 import streamlit as st
 import datetime
 
+# Load data dan proses tanggal
 df = pd.read_csv('https://raw.githubusercontent.com/Arifester/Datasets/main/gold%20prices.csv')
 df['Date'] = pd.to_datetime(df['Date'])
 
-# Menghitung jumlah hari sejak tanggal pertama dalam dataset
+# Hitung jumlah hari sejak tanggal pertama
 df['Days'] = (df['Date'] - df['Date'].min()).dt.days
 
-# Memilih fitur dan target
-X = df[['Days']].values
-y = df['Close/Last'].values
-
-# Membagi data menjadi set pelatihan dan pengujian
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=70)
-
-# Membuat model regresi linier
-model = LinearRegression()
-
-# Melatih model
-model.fit(X_train, y_train)
-
-# Membuat prediksi
-y_pred = model.predict(X_test)
-
-# Menghitung Mean Squared Error (MSE)
-mse = mean_squared_error(y_test, y_pred)
-
-
-# Konversi kolom 'Date' menjadi tipe datetime
-df['Date'] = pd.to_datetime(df['Date'])
-
-# Menghitung jumlah hari sejak tanggal pertama dalam dataset
-df['Days'] = (df['Date'] - df['Date'].min()).dt.days
-
-# Membuat model regresi linier
-model = LinearRegression()
+# Pilih fitur dan target
 X = df[['Days']]
 y = df['Close/Last']
-model.fit(X, y)
 
-# Judul aplikasi
+# Bagi data untuk pelatihan dan pengujian (optional, kamu juga bisa pakai semua data)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=70)
+
+# Buat dan latih model regresi linier
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Evaluasi model (optional)
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+st.write(f'Mean Squared Error (MSE) pada data test: {mse:.2f}')
+
+# Judul dan gambar aplikasi
 st.title('Prediksi Harga Emas')
 st.image('https://www.mentarimulia.co.id/wp-content/uploads/2022/07/emas-5.jpg')
 
-# Input bulan dan tahun
+# Input bulan dan tahun dari user
 bulan = st.slider("Pilih Bulan (1-12)", 1, 12, 1)
-tahun = st.number_input("Masukkan Tahun (contoh: 2024)", value=2024)  # Default value untuk tahun
+tahun = st.number_input("Masukkan Tahun (contoh: 2024)", value=2024)
 
-# Konversi bulan dan tahun menjadi bilangan bulat
-bulan = int(bulan)
-tahun = int(tahun)
+# Buat objek tanggal dari input user
+input_date = pd.Timestamp(year=int(tahun), month=int(bulan), day=1)
 
-# Membuat objek timestamp berdasarkan input bulan dan tahun
-input_date = pd.Timestamp(year=tahun, month=bulan, day=1)
-
-# Validasi input_date
+# Validasi input tanggal
 if input_date < df['Date'].min():
     st.error(f"Input tanggal tidak valid. Tanggal harus setelah {df['Date'].min().date()}.")
 else:
-    # Menghitung jumlah hari berdasarkan bulan dan tahun yang diinput
     days_input = (input_date - df['Date'].min()).days
 
-    # Membuat prediksi harga emas untuk bulan dan tahun yang diinput
-    predicted_price = model.predict([[days_input]])
+    # Bungkus input menjadi DataFrame dengan nama kolom yang sama dengan data training
+    input_df = pd.DataFrame([[days_input]], columns=['Days'])
 
-    # Menampilkan hasil prediksi
+    # Prediksi harga emas
+    predicted_price = model.predict(input_df)
+
+    # Tampilkan hasil prediksi
     st.write(f'Prediksi harga emas untuk bulan {bulan} tahun {tahun}: ${predicted_price[0]:.2f}')
