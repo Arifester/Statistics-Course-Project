@@ -1,58 +1,90 @@
-import numpy as np
-import pandas as pd
-import seaborn as sns
-from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
 import streamlit as st
+import pandas as pd
 import datetime
 
-# Load data dan proses tanggal
-df = pd.read_csv('https://raw.githubusercontent.com/Arifester/Datasets/main/gold%20prices.csv')
-df['Date'] = pd.to_datetime(df['Date'])
+# Import modul buatan sendiri
+from modules import data, model, visual
 
-# Hitung jumlah hari sejak tanggal pertama
-df['Days'] = (df['Date'] - df['Date'].min()).dt.days
+# 1. Konfigurasi Halaman (Harus di baris pertama)
+st.set_page_config(
+    page_title="Gold Price Predictor",
+    page_icon="💰",
+    layout="wide"
+)
 
-# Pilih fitur dan target
-X = df[['Days']]
-y = df['Close/Last']
+# Custom CSS sederhana untuk mempercantik
+st.markdown("""
+<style>
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 10px;
+        border-radius: 10px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Bagi data untuk pelatihan dan pengujian (optional, kamu juga bisa pakai semua data)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=70)
+def main():
+    # --- SIDEBAR ---
+    with st.sidebar:
+        st.header("⚙️ Konfigurasi Prediksi")
+        st.write("Atur parameter waktu untuk memprediksi harga emas di masa depan.")
+        
+        # Input User
+        current_year = datetime.datetime.now().year
+        bulan = st.selectbox("Pilih Bulan", range(1, 13), index=0)
+        tahun = st.number_input("Masukkan Tahun", min_value=2000, max_value=2050, value=current_year)
+        
+        st.markdown("---")
+        st.caption("Project Statistika - Reimagined")
 
-# Buat dan latih model regresi linier
-model = LinearRegression()
-model.fit(X_train, y_train)
+    # --- MAIN CONTENT ---
+    st.title("💰 Analisis & Prediksi Harga Emas")
+    st.markdown("Aplikasi ini menggunakan **Linear Regression** untuk menganalisis tren historis dan memprediksi harga emas di masa depan.")
 
-# Evaluasi model (optional)
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
-st.write(f'Mean Squared Error (MSE) pada data test: {mse:.2f}')
+    # 2. Load Data
+    DATA_URL = 'https://raw.githubusercontent.com/Arifester/Datasets/main/gold%20prices.csv'
+    df, start_date = data.load_and_clean_data(DATA_URL)
 
-# Judul dan gambar aplikasi
-st.title('Prediksi Harga Emas')
-st.image('https://www.mentarimulia.co.id/wp-content/uploads/2022/07/emas-5.jpg')
+    if df is not None:
+        # 3. Train Model
+        reg_model, metrics = model.train_model(df)
 
-# Input bulan dan tahun dari user
-bulan = st.slider("Pilih Bulan (1-12)", 1, 12, 1)
-tahun = st.number_input("Masukkan Tahun (contoh: 2024)", value=2024)
+        # 4. Tampilkan Metrik Kinerja Model (Baris Atas)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Data Points", len(df))
+        with col2:
+            st.metric("Model Accuracy (R²)", f"{metrics['r2']:.2%}")
+        with col3:
+            latest_price = df['Close/Last'].iloc[-1]
+            st.metric("Harga Terakhir (Dataset)", f"${latest_price:.2f}")
 
-# Buat objek tanggal dari input user
-input_date = pd.Timestamp(year=int(tahun), month=int(bulan), day=1)
+        # 5. Proses Prediksi User
+        input_date = pd.Timestamp(year=int(tahun), month=int(bulan), day=1)
+        
+        if input_date < start_date:
+            st.error(f"⚠️ Tanggal prediksi harus setelah {start_date.date()}")
+        else:
+            predicted_price = model.make_prediction(reg_model, input_date, start_date)
+            
+            # Tampilkan Hasil Prediksi dengan Highlight
+            st.success(f"### 🎯 Prediksi Harga: ${predicted_price:.2f}")
+            
+            # 6. Visualisasi
+            st.subheader("Grafik Pergerakan Harga")
+            chart = visual.plot_gold_trend(df, input_date, predicted_price)
+            st.plotly_chart(chart, use_container_width=True)
 
-# Validasi input tanggal
-if input_date < df['Date'].min():
-    st.error(f"Input tanggal tidak valid. Tanggal harus setelah {df['Date'].min().date()}.")
-else:
-    days_input = (input_date - df['Date'].min()).days
+            # Penjelasan Statistik (Opsional, untuk nilai tambah mata kuliah)
+            with st.expander("ℹ️ Penjelasan Statistik (Behind the Scene)"):
+                st.write(f"""
+                Model menggunakan algoritma **Linear Regression**.
+                - **MSE (Mean Squared Error):** {metrics['mse']:.2f} (Semakin kecil semakin baik)
+                - **R² Score:** {metrics['r2']:.4f} (Menunjukkan seberapa baik garis regresi cocok dengan data)
+                
+                Rumus dasar: $y = mx + c$, dimana $x$ adalah jumlah hari sejak {start_date.date()}.
+                """)
 
-    # Bungkus input menjadi DataFrame dengan nama kolom yang sama dengan data training
-    input_df = pd.DataFrame([[days_input]], columns=['Days'])
-
-    # Prediksi harga emas
-    predicted_price = model.predict(input_df)
-
-    # Tampilkan hasil prediksi
-    st.write(f'Prediksi harga emas untuk bulan {bulan} tahun {tahun}: ${predicted_price[0]:.2f}')
+if __name__ == "__main__":
+    main()
+    
