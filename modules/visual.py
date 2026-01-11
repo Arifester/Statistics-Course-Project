@@ -23,7 +23,7 @@ def plot_gold_trend(df, input_date=None, predicted_price=None):
             y=[predicted_price],
             mode='markers+text',
             name='Prediksi Kamu',
-            marker=dict(color='red', size=12, symbol='star'),
+            marker=dict(color='cyan', size=12, symbol='circle-dot'),
             text=[f"${predicted_price:.2f}"],
             textposition="top center"
         ))
@@ -32,7 +32,7 @@ def plot_gold_trend(df, input_date=None, predicted_price=None):
         title='Tren Harga Emas & Prediksi',
         xaxis_title='Tahun',
         yaxis_title='Harga (USD)',
-        template='plotly_dark', # Tema gelap agar elegan
+        template='plotly_dark', # Tema gelap
         hovermode="x unified"
     )
 

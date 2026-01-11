@@ -1,2 +1,4 @@
 # Statistic Course Project
-This repository is a Statistics course project that contains code to predict gold prices using historical gold price datasets. This application uses machine learning methods to generate future gold price predictions based on time data.
+This Statistics course project is an interactive Machine Learning web application designed to forecast gold price trends using Linear Regression.
+Built with Streamlit, it transforms historical data into actionable insights through dynamic Plotly visualizations.
+The codebase features a refactored, modular architecture that leverages Scikit-Learn for predictive modeling and Pandas for efficient data processing, demonstrating a clean implementation of statistical analysis within a modern Python web environment.

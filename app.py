@@ -12,17 +12,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS sederhana untuk mempercantik
-st.markdown("""
-<style>
-    .stMetric {
-        background-color: #f0f2f6;
-        padding: 10px;
-        border-radius: 10px;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 def main():
     # --- SIDEBAR ---
     with st.sidebar:
@@ -35,7 +24,7 @@ def main():
         tahun = st.number_input("Masukkan Tahun", min_value=2000, max_value=2050, value=current_year)
         
         st.markdown("---")
-        st.caption("Project Statistika - Reimagined")
+        st.caption("Proyek Mata Kuliah Statistika")
 
     # --- MAIN CONTENT ---
     st.title("💰 Analisis & Prediksi Harga Emas")
@@ -76,7 +65,7 @@ def main():
             st.plotly_chart(chart, use_container_width=True)
 
             # Penjelasan Statistik (Opsional, untuk nilai tambah mata kuliah)
-            with st.expander("ℹ️ Penjelasan Statistik (Behind the Scene)"):
+            with st.expander("ℹ️ Penjelasan Statistik Model"):
                 st.write(f"""
                 Model menggunakan algoritma **Linear Regression**.
                 - **MSE (Mean Squared Error):** {metrics['mse']:.2f} (Semakin kecil semakin baik)
