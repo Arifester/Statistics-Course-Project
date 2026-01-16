@@ -31,7 +31,7 @@ def main():
     st.markdown("Aplikasi ini menggunakan **Linear Regression** untuk menganalisis tren historis dan memprediksi harga emas di masa depan.")
 
     # 2. Load Data
-    DATA_URL = 'https://raw.githubusercontent.com/Arifester/Datasets/main/gold%20prices.csv'
+    DATA_URL = 'https://raw.githubusercontent.com/Arifester/datasets/refs/heads/main/gold_prices.csv'
     df, start_date = data.load_and_clean_data(DATA_URL)
 
     if df is not None:
